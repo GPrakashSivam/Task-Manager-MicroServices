@@ -1,4 +1,5 @@
 from rest_framework import generics, permissions
+from rest_framework.exceptions import PermissionDenied
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -13,12 +14,22 @@ from .serializers import UserRegisterSerializer, UserSerializer, CustomTokenObta
 
 class UserRegisterView(generics.CreateAPIView):
     """
-    View for user registration. Only accesible to admins
+    View for user registration. Allows unauthenticated registration for regular users.
+    Admin registration requires authenticated admin role.
     """
     queryset = User.objects.all()
     serializer_class = UserRegisterSerializer
-    permission_classes = [permissions.IsAdminUser]
-
+    
+    def perform_create(self, serializer):
+        # Check if the role is set to "admin" in the request data
+        if self.request.data.get("role") == "admin":
+            # Require admin authentication for registering an admin user
+            if not self.request.user.is_authenticated or self.request.user.role != 'admin':
+                raise PermissionDenied("Admin registration requires admin authentication.")
+        
+        # Save the user as per provided role (default to "user" if not specified)
+        serializer.save()
+    
 class UserDetailView(generics.RetrieveAPIView):
     """
     Views for retrieving the details of authenticated user
