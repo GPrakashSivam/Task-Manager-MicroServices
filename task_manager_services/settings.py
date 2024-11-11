@@ -11,9 +11,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+#DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost','task-mgr-services.onrender.com']
 
 # Application definition
 INSTALLED_APPS = [
@@ -38,6 +38,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
 
 ROOT_URLCONF = 'task_manager_services.urls'
@@ -80,12 +81,12 @@ REST_FRAMEWORK = {
 }
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(hours=5),    # Set the access token expiration to 1 hour
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),     # Set the refresh token expiration to 7 days
-    'ROTATE_REFRESH_TOKENS': True,                   # Optional: Generates a new refresh token when refreshing access token
-    'BLACKLIST_AFTER_ROTATION': True,                # Optional: Blacklists old refresh tokens (requires blacklist app)
+    'ACCESS_TOKEN_LIFETIME': timedelta(hours=1),    # Set the access token expiration to 1 hour
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),    # Set the refresh token expiration to 7 days
+    'ROTATE_REFRESH_TOKENS': True,                  # Optional: Generates a new refresh token when refreshing access token
+    'BLACKLIST_AFTER_ROTATION': True,               # Optional: Blacklists old refresh tokens (requires blacklist app)
     'ALGORITHM': 'HS256',
-    'SIGNING_KEY': os.getenv('SECRET_KEY'),                       # Use your Django SECRET_KEY here
+    'SIGNING_KEY': os.getenv('SECRET_KEY'),
 }
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -107,7 +108,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Kolkata' #updated from UTC
 
 USE_I18N = True
 
@@ -115,6 +116,12 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = 'static/'
+if os.environ.get('ENVIRONMENT') == 'Production':
+    # Tell Django to copy static assets into a path called `staticfiles` (this is specific to Render)
+    STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+    # Enable the WhiteNoise storage backend, which compresses static files to reduce disk use
+    # and renames the files with unique names for each version to support long-term caching
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
